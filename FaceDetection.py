@@ -1,8 +1,6 @@
 import cv2
 import numpy as np
 
-# http://docs.opencv.org/master/db/df8/tutorial_py_meanshift.html
-
 cap = cv2.VideoCapture(1)
 
 # take first frame of the video
