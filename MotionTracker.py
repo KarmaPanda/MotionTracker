@@ -1,10 +1,13 @@
-import cv2
-import numpy as np
+import os
 from FaceDetection import *
+from FileOutput import *
+from KeyMapping import *
 
 # Variables
 active = True
 camera = cv2.VideoCapture(0)
+destination = "Videos/"
+filename = "vid_"
 
 
 # Functions
@@ -29,13 +32,27 @@ def update(previousframe):
 
 main()
 
+# Setup FileSystem
+filesinDir = os.listdir(destination)
+fileCount = 0
+for fileName in filesinDir:
+    if fileName.__contains__(fileName):
+        fileCount += 1
+
+# Starts Loop
 previousFrame = None
+frame = detectface(camera)
+output = videowriter(frame, cv2.VideoWriter_fourcc(*'8BPS'), destination + filename + str(fileCount))
 
 while active:
     #  previousFrame, finalImg = update(previousFrame)
     frame = detectface(camera)
+    output.write(frame)
     cv2.imshow("Video", frame)
-
     keyInput = chr(cv2.waitKey(1) & 0xFF)
-    if keyInput == 'q':
+    if keyInput == quitKey:
         active = False
+
+camera.release()
+output.release()
+cv2.destroyAllWindows()
