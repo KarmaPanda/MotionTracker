@@ -5,7 +5,7 @@ from KeyMapping import *
 
 # Variables
 active = True
-camera = cv2.VideoCapture(1)
+camera = cv2.VideoCapture(0)
 destination = 'Videos/'
 filename = 'vid_'
 
@@ -39,6 +39,8 @@ while active:
     keyInput = chr(cv2.waitKey(1) & 0xFF)
     if keyInput == quitKey:
         active = False
+    if cv2.getWindowProperty("Video", 0) == -1:
+        break
 
 camera.release()
 output.release()
