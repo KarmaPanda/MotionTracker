@@ -5,7 +5,7 @@ from KeyMapping import *
 
 # Variables
 active = True
-camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture(1)
 destination = "Videos/"
 filename = "vid_"
 
@@ -15,20 +15,8 @@ def main(args=None):
     pass
 
 
-def update(previousframe):
-    ret, currentframe = camera.read()
-    if previousFrame is None:
-        img = currentframe
-    else:
-        img = cv2.subtract(currentframe, previousframe)
-
-    finalimg = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    finalimg = cv2.GaussianBlur(finalimg, (5, 5), -1)
-    ret, finalimg = cv2.threshold(finalimg, 20, 255, cv2.THRESH_BINARY_INV)
-    #  contimg, contours, hier = cv2.findContours(finalimg, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-    #  cv2.drawContours(finalimg, contours, -1, (0, 255, 0), 3)
-    ret, currentframe = camera.read()
-    return currentframe, finalimg
+def update():
+    pass
 
 main()
 
@@ -42,12 +30,12 @@ for fileName in filesinDir:
 # Starts Loop
 previousFrame = None
 frame = detectface(camera)
-output = videowriter(frame, cv2.VideoWriter_fourcc(*'8BPS'), destination + filename + str(fileCount))
+output = videowriter(frame, cv2.VideoWriter_fourcc(*'avc1'), destination + filename + str(fileCount))
 
 while active:
-    #  previousFrame, finalImg = update(previousFrame)
+    ret, frame = camera.read()
     frame = detectface(camera)
-    output.write(frame)
+    # output.write(frame)
     cv2.imshow("Video", frame)
     keyInput = chr(cv2.waitKey(1) & 0xFF)
     if keyInput == quitKey:
