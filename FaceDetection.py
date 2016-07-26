@@ -12,7 +12,7 @@ def detectface(cap):
     if ret:
         frame = cv2.resize(frame, (0, 0), fx=0.3, fy=0.3)
         grayframe = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(grayframe, 1.3, 5)
+        faces = face_cascade.detectMultiScale(grayframe, 1.1, 5, cv2.CASCADE_DO_CANNY_PRUNING)
 
         for (x, y, w, h) in faces:
             cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
