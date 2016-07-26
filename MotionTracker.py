@@ -1,13 +1,16 @@
 import cv2
 import numpy as np
+from FaceDetection import *
 
 # Variables
 active = True
 camera = cv2.VideoCapture(0)
 
+
 # Functions
 def main(args=None):
     pass
+
 
 def update(previousframe):
     ret, currentframe = camera.read()
@@ -29,8 +32,10 @@ main()
 previousFrame = None
 
 while active:
-    previousFrame, finalImg = update(previousFrame)
-    cv2.imshow("Image", finalImg)
+    #  previousFrame, finalImg = update(previousFrame)
+    frame = detectface(camera)
+    cv2.imshow("Video", frame)
+
     keyInput = chr(cv2.waitKey(1) & 0xFF)
     if keyInput == 'q':
         active = False
