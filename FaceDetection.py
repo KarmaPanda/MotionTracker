@@ -11,7 +11,7 @@ def detectface(cap):
     ret, frame = cap.read()
     if ret:
         frame = cv2.resize(frame, (0, 0), fx=imgSizeX, fy=imgSizeY)
-        faces = face_cascade.detectMultiScale(frame, 1.3, 5, cv2.CASCADE_DO_CANNY_PRUNING)
+        faces = face_cascade.detectMultiScale(frame, 1.15, 5, cv2.CASCADE_DO_CANNY_PRUNING)
         for (x, y, w, h) in faces:
             cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
             roi = frame[y:y+h, x:x+w]

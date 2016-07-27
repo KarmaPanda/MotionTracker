@@ -2,6 +2,6 @@ import cv2
 import numpy as np
 
 
-def videowriter(frame, codec, dest):
+def videowriter(frame, codec, dest, fps):
     height, width, depth = frame.shape
-    return cv2.VideoWriter(dest, codec, 20.0, (width, height), 1)
+    return cv2.VideoWriter(dest, codec, fps, (width, height), 1)

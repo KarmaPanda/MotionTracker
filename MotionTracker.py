@@ -28,14 +28,16 @@ for fileName in filesinDir:
 # Starts Loop
 previousFrame = None
 frame = detectface(camera)
-codec = cv2.VideoWriter_fourcc('H','2','6','4')
-output = videowriter(frame, codec, destination + filename + str(fileCount))
+codec = cv2.VideoWriter_fourcc('a', 'v', 'c', '1')
+output = videowriter(frame, codec, destination + filename + str(fileCount), 5)
 
 while active:
-    ret, frame = camera.read()
-    frame = detectface(camera)
-    output.write(frame)
-    cv2.imshow("Video", frame)
+    valid = camera.grab()
+    if valid:
+        ret, frame = camera.read()
+        frame = detectface(camera)
+        output.write(frame)
+        cv2.imshow("Video", frame)
     keyInput = chr(cv2.waitKey(1) & 0xFF)
     if keyInput == quitKey:
         active = False
