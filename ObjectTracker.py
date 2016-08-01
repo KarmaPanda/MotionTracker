@@ -1,10 +1,10 @@
 from Dependencies import *
-from Extensions import resizeframe, getdistance, isclose
+from Extensions import resizeframe, getcolor, isclose
 
 class ObjectTracker(object):
     isOccupied = False
     camera = None
-    fgbg = cv2.createBackgroundSubtractorMOG2(history=100)
+    fgbg = cv2.createBackgroundSubtractorMOG2(history=200)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (20, 20))
 
     def __init__(self, camera):
@@ -12,10 +12,11 @@ class ObjectTracker(object):
         cv2.ocl.setUseOpenCL(False)
 
     def update(self):
+
         self.isOccupied = False
         ret, frame = self.camera.read()
         frame = resizeframe(frame)
-
+        h, w, d = frame.shape
         if not ret:
             return None
 
@@ -55,7 +56,8 @@ class ObjectTracker(object):
                     hull = cv2.convexHull(cont)
                     unified.append(hull)
             if unified is not None:
-                cv2.drawContours(frame, unified, -1, (0, 255, 0), 2)
+                color = getcolor(h*w, cv2.contourArea(unified[0]))
+                cv2.drawContours(frame, unified, -1, color, 2)
                 self.isOccupied = True
 
         return frame
