@@ -1,3 +1,4 @@
-quitKey = 'q'
-recordKey = 'r'
-screenshotKey = 's'
+class Keymap():
+    quitKey = 'q'
+    recordKey = 'r'
+    screenshotKey = 's'
