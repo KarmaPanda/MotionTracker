@@ -41,4 +41,3 @@ def isclose(cnt1,cnt2):
                 return True
             elif i==row1-1 and j==row2-1:
                 return False
-

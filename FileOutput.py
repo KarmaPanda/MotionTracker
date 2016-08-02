@@ -40,6 +40,6 @@ class FileOutput(object):
     def setuprecording(self, frame=None):
         if frame is None:
             frame = self.facetracker.detectface
-        fps = self.facetracker.getaveragefps
+        fps = 10
         output = videowriter(frame, self.codec, self.destinationVid + self.filenameVid + str(self.fileCountVid), fps)
         return output

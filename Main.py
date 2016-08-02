@@ -2,51 +2,72 @@ from Dependencies import *
 from FileOutput import FileOutput
 from FaceTracker import FaceTracker
 from ObjectTracker import ObjectTracker
-from KeyMapping import Keymap
 
-_camera = cv2.VideoCapture(0)
-_faceTracker = FaceTracker(None, None)
-_fileOutput = FileOutput(None)
-_objectTracker = ObjectTracker(None)
-_faceTracker.__init__(camera=_camera, fileoutput=_fileOutput)
-_fileOutput.__init__(facetracker=_faceTracker)
-_objectTracker.__init__(camera=_camera)
+class Main(object):
+    _active = True
+    _camera = cv2.VideoCapture(0)
+    _currentFrame = None
+    _faceTracker = FaceTracker(None, object, None)
+    _fileOutput = FileOutput(None)
+    _objectTracker = ObjectTracker(None)
 
-while True:
-    frame = _objectTracker.update()
-    if _objectTracker.isOccupied:
-        frame = _faceTracker.detectface(frame)
-    frame = _objectTracker.printstamp(frame)
-    cv2.imshow("Video", frame)
-    if _fileOutput.record:
-        _fileOutput.output.write(frame)
-    keyInput = chr(cv2.waitKey(1) & 0xFF)
-    if keyInput == Keymap.quitKey:
-        break
-    if cv2.getWindowProperty("Video", 0) == -1:
-        break
-    if keyInput == Keymap.recordKey:
-        if _fileOutput.record:
-            _fileOutput.record = False
-            _fileOutput.output.release()
-            _fileOutput.fileCountVid += 1
-        else:
-            _fileOutput.output = _fileOutput.setuprecording(frame)
-            _fileOutput.record = True
-    if keyInput == Keymap.screenshotKey:
-        _fileOutput.takescreenshot(frame)
+    def __init__(self):
+        self._faceTracker.__init__(camera=self._camera, instance=self, fileoutput=self._fileOutput)
+        self._fileOutput.__init__(facetracker=self._faceTracker)
+        self._objectTracker.__init__(camera=self._camera)
 
-'''
+        while self._active:
+            if not self._camera.isOpened():
+                self._camera.open(0)
+            if self._fileOutput.record:
+                self._fileOutput.output = self._fileOutput.setuprecording()
+            t_end = time.time() + 60
+            while time.time() < t_end:
+                self.update()
+                ret = self.checkkey()
+                if not ret:
+                    break
+            self._camera.release()
+            if self._fileOutput.record:
+                self._fileOutput.output.release()
+                self._fileOutput.fileCountVid += 1
 
-x = FaceTracker()
+        self._camera.release()
+        if self._fileOutput.record:
+            self._fileOutput.output.release()
+        cv2.destroyAllWindows()
 
-while FaceTracker.active:
-    frame = x.update()
-    keyInput = chr(cv2.waitKey(x.getaveragefps()) & 0xFF)
+    def update(self):
+        frame = self._objectTracker.update()
+        if self._objectTracker.isOccupied:
+            frame = self._faceTracker.detectface(frame)
+        frame = self._objectTracker.printstamp(frame)
+        cv2.imshow("Video", frame)
+        if self._fileOutput.record and self._objectTracker.isOccupied:
+            self._fileOutput.output.write(frame)
+        self._currentFrame = frame
+        return True
 
-'''
+    def checkkey(self):
+        ret = True
+        keyInput = chr(cv2.waitKey(5) & 0xFF)
+        if keyInput == Keymap.quitKey:
+            self._active = False
+            ret = False
+        if cv2.getWindowProperty("Video", 0) == -1:
+            self._active = False
+            ret = False
+        if keyInput == Keymap.recordKey:
+            if self._fileOutput.record:
+                self._fileOutput.record = False
+                self._fileOutput.output.release()
+                self._fileOutput.fileCountVid += 1
+            else:
+                self._fileOutput.output = self._fileOutput.setuprecording(self._currentFrame)
+                self._fileOutput.record = True
+        if keyInput == Keymap.screenshotKey:
+            self._fileOutput.takescreenshot(self._currentFrame)
+        return ret
 
-_camera.release()
-if _fileOutput.record:
-    _fileOutput.output.release()
-cv2.destroyAllWindows()
+instance = Main()
+instance.__init__()
