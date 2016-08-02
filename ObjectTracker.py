@@ -1,10 +1,10 @@
 from Dependencies import *
-from Extensions import resizeframe, getdistance, isclose
+from Extensions import resizeframe, getcolor, isclose
 
 class ObjectTracker(object):
     isOccupied = False
     camera = None
-    fgbg = cv2.createBackgroundSubtractorMOG2(history=100)
+    fgbg = cv2.createBackgroundSubtractorMOG2(history=500)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (20, 20))
 
     def __init__(self, camera):
@@ -12,30 +12,32 @@ class ObjectTracker(object):
         cv2.ocl.setUseOpenCL(False)
 
     def update(self):
+
         self.isOccupied = False
         ret, frame = self.camera.read()
         frame = resizeframe(frame)
-
+        h, w, d = frame.shape
+        # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         if not ret:
             return None
 
+        # fgmask = cv2.GaussianBlur(frame, (5, 5), 0)
         fgmask = self.fgbg.apply(frame)
         (height, width, depth) = frame.shape
         fgmask = cv2.GaussianBlur(fgmask, (21, 21), 0)
-        framedelta = fgmask
-        thresh = cv2.threshold(framedelta, 25, 255, cv2.THRESH_BINARY)[1]
+        thresh = cv2.threshold(fgmask, 25, 255, cv2.THRESH_BINARY)[1]
         fgmask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel=self.kernel)
         q, contours, q1 = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
+        cv2.imshow("Frame Differnce", fgmask)
         LENGTH = len(contours)
         status = np.zeros((LENGTH, 1))
 
         for i, cnt1 in enumerate(contours):
             x = i
-            if cv2.contourArea(cnt1) > 400:
+            if cv2.contourArea(cnt1) > 500:
                 if i != LENGTH - 1:
                     for j, cnt2 in enumerate(contours[i + 1:]):
-                        if cv2.contourArea(cnt2) > 400:
+                        if cv2.contourArea(cnt2) > 500:
                             x = x + 1
                             dist = isclose(cnt1, cnt2)
                             if dist == True:
@@ -55,7 +57,8 @@ class ObjectTracker(object):
                     hull = cv2.convexHull(cont)
                     unified.append(hull)
             if unified is not None:
-                cv2.drawContours(frame, unified, -1, (0, 255, 0), 2)
+                color = getcolor(h*w, cv2.contourArea(unified[0]))
+                cv2.drawContours(frame, unified, -1, color, 2)
                 self.isOccupied = True
 
         return frame

@@ -8,17 +8,14 @@ def resizeframe(frame):
     return cv2.resize(frame, (0, 0), fx=imgSizeX, fy=imgSizeY)
 
 
-def getdistance(frameh, framew, recth, rectw):
-    ratio1 = float(recth)/float(frameh)
-    ratio2 = float(rectw)/float(framew)
-    print ratio1, ratio2
-    if ratio1 < 0.2 and ratio1 < 0.2:
-        return 1
-    elif 0.6 > ratio1 > 0.2 and ratio2 < 0.6 and ratio2 > 0.2:
-        return 2
+def getcolor(frameArea, objectArea):
+    ratio = objectArea/frameArea
+    if ratio < 0.4 and ratio > 0:
+        return (0,255, 0)
+    elif ratio > 0.4 and ratio < 0.8:
+        return  (0, 255, 255)
     else:
-        return 3
-
+        return (0, 0, 255)
 
 def videowriter(frame, codec, dest, fps):
     height, width, depth = frame.shape
@@ -37,7 +34,7 @@ def isclose(cnt1,cnt2):
     for i in xrange(row1):
         for j in xrange(row2):
             dist = np.linalg.norm(cnt1[i]- cnt2[j])
-            if abs(dist) < 50 :
+            if abs(dist) < 60 :
                 return True
             elif i==row1-1 and j==row2-1:
                 return False
