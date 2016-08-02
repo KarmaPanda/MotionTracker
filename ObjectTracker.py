@@ -4,7 +4,7 @@ from Extensions import resizeframe, getcolor, isclose
 class ObjectTracker(object):
     isOccupied = False
     camera = None
-    fgbg = cv2.createBackgroundSubtractorMOG2(history=200)
+    fgbg = cv2.createBackgroundSubtractorMOG2(history=250, varThreshold=80)
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (20, 20))
 
     def __init__(self, camera):
@@ -17,9 +17,11 @@ class ObjectTracker(object):
         ret, frame = self.camera.read()
         frame = resizeframe(frame)
         h, w, d = frame.shape
+        # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         if not ret:
             return None
 
+        fgmask = cv2.GaussianBlur(frame, (5, 5), 0)
         fgmask = self.fgbg.apply(frame)
         (height, width, depth) = frame.shape
         fgmask = cv2.GaussianBlur(fgmask, (21, 21), 0)
@@ -33,10 +35,10 @@ class ObjectTracker(object):
 
         for i, cnt1 in enumerate(contours):
             x = i
-            if cv2.contourArea(cnt1) > 400:
+            if cv2.contourArea(cnt1) > 500:
                 if i != LENGTH - 1:
                     for j, cnt2 in enumerate(contours[i + 1:]):
-                        if cv2.contourArea(cnt2) > 400:
+                        if cv2.contourArea(cnt2) > 500:
                             x = x + 1
                             dist = isclose(cnt1, cnt2)
                             if dist == True:

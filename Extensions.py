@@ -34,7 +34,7 @@ def isclose(cnt1,cnt2):
     for i in xrange(row1):
         for j in xrange(row2):
             dist = np.linalg.norm(cnt1[i]- cnt2[j])
-            if abs(dist) < 50 :
+            if abs(dist) < 60 :
                 return True
             elif i==row1-1 and j==row2-1:
                 return False
