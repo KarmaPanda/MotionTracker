@@ -5,7 +5,8 @@ from ObjectTracker import ObjectTracker
 
 class Main(object):
     _active = True
-    _camera = cv2.VideoCapture(0)
+    _cameraPort = 0
+    _camera = cv2.VideoCapture(_cameraPort)
     _currentFrame = None
     _faceTracker = FaceTracker(None, object, None)
     _fileOutput = FileOutput(None)
@@ -17,11 +18,9 @@ class Main(object):
         self._objectTracker.__init__(camera=self._camera)
 
         while self._active:
-            if not self._camera.isOpened():
-                self._camera.open(0)
             if self._fileOutput.record:
                 self._fileOutput.output = self._fileOutput.setuprecording()
-            t_end = time.time() + 60
+            t_end = time.time() + 15
             while time.time() < t_end:
                 self.update()
                 ret = self.checkkey()
