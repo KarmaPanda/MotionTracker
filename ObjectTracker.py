@@ -28,7 +28,7 @@ class ObjectTracker(object):
         thresh = cv2.threshold(fgmask, 25, 255, cv2.THRESH_BINARY)[1]
         fgmask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel=self.kernel)
         q, contours, q1 = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cv2.imshow("Frame Differnce", fgmask)
+        #  cv2.imshow("Frame Differnce", fgmask)
         LENGTH = len(contours)
         status = np.zeros((LENGTH, 1))
 
