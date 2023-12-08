@@ -12,56 +12,57 @@ class ObjectTracker(object):
         cv2.ocl.setUseOpenCL(False)
 
     def update(self):
-
         self.isOccupied = False
-        ret, frame = self.camera.read()
-        frame = resizeframe(frame)
-        h, w, d = frame.shape
-        # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        if not ret:
+        success, frame = self.camera.read()
+        
+        if success:
+            frame = resizeframe(frame)
+            h, w, d = frame.shape
+            # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            # fgmask = cv2.GaussianBlur(frame, (5, 5), 0)
+            fgmask = self.fgbg.apply(frame)
+            (height, width, depth) = frame.shape
+            fgmask = cv2.GaussianBlur(fgmask, (21, 21), 0)
+            thresh = cv2.threshold(fgmask, 25, 255, cv2.THRESH_BINARY)[1]
+            fgmask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel=self.kernel)
+            contours, hierarchy = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            #  cv2.imshow("Frame Difference", fgmask)
+            LENGTH = len(contours)
+            status = np.zeros((LENGTH, 1))
+
+            for i, cnt1 in enumerate(contours):
+                x = i
+                if cv2.contourArea(cnt1) > 500:
+                    if i != LENGTH - 1:
+                        for j, cnt2 in enumerate(contours[i + 1:]):
+                            if cv2.contourArea(cnt2) > 500:
+                                x = x + 1
+                                dist = isclose(cnt1, cnt2)
+                                if dist == True:
+                                    val = min(status[i], status[x])
+                                    status[x] = status[i] = val
+                                else:
+                                    if status[x] == status[i]:
+                                        status[x] = i + 1
+
+            if(len(status)  > 1):
+                unified = []
+                maximum = int(status.max()) + 1
+                for i in range(maximum):
+                    pos = np.where(status == i)[0]
+                    if pos.size != 0:
+                        # cont = np.vstack(contours[i] for i in pos)
+                        cont = np.vstack([np.asarray(contours[i]) for i in pos])
+                        hull = cv2.convexHull(cont)
+                        unified.append(hull)
+                if unified is not None:
+                    color = getcolor(h*w, cv2.contourArea(unified[0]))
+                    cv2.drawContours(frame, unified, -1, color, 2)
+                    self.isOccupied = True
+
+            return frame
+        else:
             return None
-
-        # fgmask = cv2.GaussianBlur(frame, (5, 5), 0)
-        fgmask = self.fgbg.apply(frame)
-        (height, width, depth) = frame.shape
-        fgmask = cv2.GaussianBlur(fgmask, (21, 21), 0)
-        thresh = cv2.threshold(fgmask, 25, 255, cv2.THRESH_BINARY)[1]
-        fgmask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel=self.kernel)
-        q, contours, q1 = cv2.findContours(fgmask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        #  cv2.imshow("Frame Differnce", fgmask)
-        LENGTH = len(contours)
-        status = np.zeros((LENGTH, 1))
-
-        for i, cnt1 in enumerate(contours):
-            x = i
-            if cv2.contourArea(cnt1) > 500:
-                if i != LENGTH - 1:
-                    for j, cnt2 in enumerate(contours[i + 1:]):
-                        if cv2.contourArea(cnt2) > 500:
-                            x = x + 1
-                            dist = isclose(cnt1, cnt2)
-                            if dist == True:
-                                val = min(status[i], status[x])
-                                status[x] = status[i] = val
-                            else:
-                                if status[x] == status[i]:
-                                    status[x] = i + 1
-
-        if(len(status)  > 1):
-            unified = []
-            maximum = int(status.max()) + 1
-            for i in xrange(maximum):
-                pos = np.where(status == i)[0]
-                if pos.size != 0:
-                    cont = np.vstack(contours[i] for i in pos)
-                    hull = cv2.convexHull(cont)
-                    unified.append(hull)
-            if unified is not None:
-                color = getcolor(h*w, cv2.contourArea(unified[0]))
-                cv2.drawContours(frame, unified, -1, color, 2)
-                self.isOccupied = True
-
-        return frame
 
     def printstamp(self, frame):
         text = "Occupied" if self.isOccupied else "Unoccupied"

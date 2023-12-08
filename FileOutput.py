@@ -1,6 +1,7 @@
 from Dependencies import *
 from Extensions import videowriter
 
+# TODO: Create folders by default.
 class FileOutput(object):
     codec = cv2.VideoWriter_fourcc('a', 'v', 'c', '1')
     destinationVid = 'Videos/'

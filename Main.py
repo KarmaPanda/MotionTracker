@@ -3,6 +3,7 @@ from FileOutput import FileOutput
 from FaceTracker import FaceTracker
 from ObjectTracker import ObjectTracker
 
+
 class Main(object):
     _active = True
     _cameraPort = 0
@@ -13,7 +14,8 @@ class Main(object):
     _objectTracker = ObjectTracker(None)
 
     def __init__(self):
-        self._faceTracker.__init__(camera=self._camera, instance=self, fileoutput=self._fileOutput)
+        self._faceTracker.__init__(
+            camera=self._camera, instance=self, fileoutput=self._fileOutput)
         self._fileOutput.__init__(facetracker=self._faceTracker)
         self._objectTracker.__init__(camera=self._camera)
 
@@ -26,7 +28,7 @@ class Main(object):
                 ret = self.checkkey()
                 if not ret:
                     break
-            self._camera.release()
+            # self._camera.release()
             if self._fileOutput.record:
                 self._fileOutput.output.release()
                 self._fileOutput.fileCountVid += 1
@@ -37,15 +39,20 @@ class Main(object):
         cv2.destroyAllWindows()
 
     def update(self):
-        frame = self._objectTracker.update()
-        if self._objectTracker.isOccupied:
-            frame = self._faceTracker.detectface(frame)
-        frame = self._objectTracker.printstamp(frame)
-        cv2.imshow("Video", frame)
-        if self._fileOutput.record and self._objectTracker.isOccupied:
-            self._fileOutput.output.write(frame)
-        self._currentFrame = frame
-        return True
+        try:
+            frame = self._objectTracker.update()
+            if frame is not None:
+                if self._objectTracker.isOccupied:
+                    frame = self._faceTracker.detectface(frame)
+                frame = self._objectTracker.printstamp(frame)
+                cv2.imshow("Video", frame)
+                if self._fileOutput.record and self._objectTracker.isOccupied:
+                    self._fileOutput.output.write(frame)
+                self._currentFrame = frame
+            else:
+                print("No frame found...")
+        except:
+            print("Error in update...")
 
     def checkkey(self):
         ret = True
@@ -62,11 +69,13 @@ class Main(object):
                 self._fileOutput.output.release()
                 self._fileOutput.fileCountVid += 1
             else:
-                self._fileOutput.output = self._fileOutput.setuprecording(self._currentFrame)
+                self._fileOutput.output = self._fileOutput.setuprecording(
+                    self._currentFrame)
                 self._fileOutput.record = True
         if keyInput == Keymap.screenshotKey:
             self._fileOutput.takescreenshot(self._currentFrame)
         return ret
+
 
 instance = Main()
 instance.__init__()

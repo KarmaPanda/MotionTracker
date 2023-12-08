@@ -1,5 +1,6 @@
 from Dependencies import *
 
+# TODO: Auto scale frame based on monitor.
 imgSizeX = 0.25
 imgSizeY = 0.25
 
@@ -11,11 +12,12 @@ def resizeframe(frame):
 def getcolor(frameArea, objectArea):
     ratio = objectArea/frameArea
     if ratio < 0.4 and ratio > 0:
-        return (0,255, 0)
+        return (0, 255, 0)
     elif ratio > 0.4 and ratio < 0.8:
-        return  (0, 255, 255)
+        return (0, 255, 255)
     else:
         return (0, 0, 255)
+
 
 def videowriter(frame, codec, dest, fps):
     height, width, depth = frame.shape
@@ -29,12 +31,12 @@ def clear(event, x, y, flags, pathFrame):
         firstFrame = gray
 
 
-def isclose(cnt1,cnt2):
-    row1,row2 = cnt1.shape[0],cnt2.shape[0]
-    for i in xrange(row1):
-        for j in xrange(row2):
-            dist = np.linalg.norm(cnt1[i]- cnt2[j])
-            if abs(dist) < 60 :
+def isclose(cnt1, cnt2):
+    row1, row2 = cnt1.shape[0], cnt2.shape[0]
+    for i in range(row1):
+        for j in range(row2):
+            dist = np.linalg.norm(cnt1[i] - cnt2[j])
+            if abs(dist) < 60:
                 return True
-            elif i==row1-1 and j==row2-1:
+            elif i == row1-1 and j == row2-1:
                 return False
